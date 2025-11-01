@@ -1,4 +1,4 @@
-namespace BugStore.Responses.Customers;
+namespace BugStore.Api.Responses.Customers;
 
 public class Create
 {

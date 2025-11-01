@@ -1,15 +1,12 @@
-using BugStore.Models;
+using BugStore.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BugStore.Data;
+namespace BugStore.Api.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Customer> Customers { get; set; } = null!;
     public DbSet<Product> Products { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<OrderLine> OrderLines { get; set; } = null!;
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite();
 }

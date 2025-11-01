@@ -1,4 +1,4 @@
-namespace BugStore.Requests.Orders;
+namespace BugStore.Api.Requests.Orders;
 
 public class GetById
 {

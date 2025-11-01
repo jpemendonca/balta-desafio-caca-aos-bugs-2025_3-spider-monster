@@ -1,4 +1,4 @@
-namespace BugStore.Models;
+namespace BugStore.Api.Models;
 
 public class Order
 {
