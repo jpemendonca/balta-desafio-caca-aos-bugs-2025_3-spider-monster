@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using BugStore.Api.Models; 
 using Microsoft.AspNetCore.Http.HttpResults; 
 using BugStore.Api.Requests.Orders; 
-using BugStore.Api.Responses.Orders; 
+using BugStore.Api.Responses.Orders;
+using Microsoft.AspNetCore.Http;
 
 namespace BugStore.Test.Handlers.Order;
 
@@ -54,7 +55,10 @@ public class HandlerTest : IDisposable
         var result = await _handler.CreateAsync(request);
 
         // Assert
-        Assert.IsType<BadRequest<object>>(result);
+        var statusCodeResult = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
+    
+        // 2. Verifique se o status code é 400 (Bad Request)
+        Assert.Equal(StatusCodes.Status400BadRequest, statusCodeResult.StatusCode);
     }
 
     [Fact]
@@ -78,9 +82,11 @@ public class HandlerTest : IDisposable
 
         // Act
         var result = await _handler.CreateAsync(request);
-
-        // Assert
-        Assert.IsType<BadRequest<object>>(result);
+        
+        var statusCodeResult = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
+    
+        // 2. Verifique se o status code é 400 (Bad Request)
+        Assert.Equal(StatusCodes.Status400BadRequest, statusCodeResult.StatusCode);
     }
 
     [Fact]
@@ -88,13 +94,15 @@ public class HandlerTest : IDisposable
     {
         // Arrange
         // 1. Crie um cliente e produto válidos
-        var customer = new Customer { Id = Guid.NewGuid(), Name = "Test Customer" };
+        var customer = new Customer { Id = Guid.NewGuid(), Name = "Test Customer", Email = "email@email.com", Phone = "92222222"};
         
-        var product = new Product 
+        var product = new Api.Models.Product 
         { 
             Id = Guid.NewGuid(), 
             Title = "Test Product", 
-            Price = 10.50m
+            Price = 10.50m,
+            Slug = "New slug",
+            Description = "Test Description",
         };
         
         await _context.Customers.AddAsync(customer);
@@ -148,8 +156,16 @@ public class HandlerTest : IDisposable
     [Fact]
     public async Task GetByIdAsync_WhenOrderExists_ShouldReturnOk()
     {
-        var customer = new Customer { Id = Guid.NewGuid(), Name = "Cliente Do Pedido" };
-        var product = new Product { Id = Guid.NewGuid(), Title = "Produto Do Pedido", Price = 5 };
+        var customer = new Customer { Id = Guid.NewGuid(), Name = "Test Customer", Email = "email@email.com", Phone = "92222222"};
+        
+        var product = new Api.Models.Product  
+        { 
+            Id = Guid.NewGuid(), 
+            Title = "Test Product", 
+            Price = 10.50m,
+            Slug = "New slug",
+            Description = "Test Description",
+        };        
         
         var order = new Api.Models.Order
         {
@@ -186,7 +202,28 @@ public class HandlerTest : IDisposable
     public async Task DeleteAsync_WhenOrderExists_ShouldReturnNoContentAndRemoveOrder()
     {
         // Arrange
-        var order = new Api.Models.Order { Id = Guid.NewGuid(), CustomerId = Guid.NewGuid() };
+        var customer = new Customer { Id = Guid.NewGuid(), Name = "Test Customer", Email = "email@email.com", Phone = "92222222"};
+        
+        var product = new Api.Models.Product  
+        { 
+            Id = Guid.NewGuid(), 
+            Title = "Test Product", 
+            Price = 10.50m,
+            Slug = "New slug",
+            Description = "Test Description",
+        };        
+        
+        var order = new Api.Models.Order
+        {
+            Id = Guid.NewGuid(),
+            Customer = customer,
+            CreatedAt = DateTime.UtcNow,
+            Lines = new List<OrderLine>
+            {
+                new() { Id = Guid.NewGuid(), Product = product, Quantity = 2, Total = 10 }
+            }
+        };
+        
         await _context.Orders.AddAsync(order);
         await _context.SaveChangesAsync();
 
